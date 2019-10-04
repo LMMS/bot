@@ -9,6 +9,9 @@ To get started, edit `settings.edit.py` and change `GITHUB_USER` and `GITHUB_TOK
 
 Then, either upload deploy it to GCP or manually install the `requirements.txt` file and run the `main.py` flask module.
 
+## Github configuration
+Add a webhook, check only `statuses` event, and change `payload type` for `json`.
+
 # Documentation 
 ## How to add additional artifact titles
 Currently, we use file names in order to detect relevant artifacts and display the right title.
