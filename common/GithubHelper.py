@@ -11,7 +11,7 @@ class GithubHelper:
 
     def __init__(self, settings: Settings.Github):
         self._settings = settings
-        self._github = github.Github(self._settings.username, self._settings.token)
+        self._github = github.Github(self._settings.username, self._settings.token.get_secret_value())
 
     def find_pr_from_commit(self, repo: str, commit_sha: str) -> Optional[PullRequest]:
         repo = self._github.get_repo(repo)
