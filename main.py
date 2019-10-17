@@ -24,8 +24,8 @@ def main():
     if json_data.get('state', '') != 'success':
         return "state is not success"
 
-    pull_request = GithubHelper(settings=settings).find_pr_from_commit(json_data['repository']['full_name'],
-                                                                       json_data['commit']['sha'])
+    pull_request = GithubHelper(settings=settings.github).find_pr_from_commit(json_data['repository']['full_name'],
+                                                                              json_data['commit']['sha'])
 
     if pull_request is None:
         return "Could not find a pull request for this sha"
