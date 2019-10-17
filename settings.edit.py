@@ -6,8 +6,9 @@ comment_settings = Settings.Comment(
            "\n",
     footer="</p></details>\n"
            "\n",
-    download_line="- {title.title} {title.platform_name}: [{download_link.basename}]({download_link}) ([build link]("
-                  "build_link))\n",
+    download_line="- {title.platform_name} {title.title}: [`{download_link.basename}`]({download_link}) ([`build "
+                  "link`]( "
+                  "{build_link}))\n",
     json_header='<details><summary>:robot:</summary>\n'
                 '\n'
                 '```json\n',
