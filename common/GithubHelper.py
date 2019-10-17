@@ -1,20 +1,20 @@
-from typing import Tuple
+from typing import Optional
 
 import github
 from github.PullRequest import PullRequest
-from github.Repository import Repository
+
+from common.Settings import Settings
 
 
 class GithubHelper:
     FIND_MAX_ENTRIES = 30
 
-    def __init__(self, settings):
+    def __init__(self, settings: Settings.Github):
         self._settings = settings
-        self._github = github.Github(self._settings.GITHUB_USER, self._settings.GITHUB_TOKEN)
+        self._github = github.Github(self._settings.username, self._settings.token)
 
-    def find_pr_from_commit(self, repo, commit_sha):
-        if not isinstance(repo, Repository):
-            repo = self._github.get_repo(repo)
+    def find_pr_from_commit(self, repo: str, commit_sha: str) -> Optional[PullRequest]:
+        repo = self._github.get_repo(repo)
 
         '''
         Try to find the pull request from the info we got.
@@ -35,5 +35,3 @@ class GithubHelper:
                 return pr
 
         return None
-
-

@@ -1,86 +1,46 @@
-from typing import Tuple
+from typing import Optional
 
-import github
+from github.IssueComment import IssueComment
 from github.PullRequest import PullRequest
+
+from common.BotComment import BotComment
+from common.Settings import Settings
+from common.types import CiBuildResult
 
 
 class PullRequestLinkComment:
-    SHA_PREFIX = "SHA: "
-
-    def __init__(self, settings):
+    def __init__(self, settings: Settings):
         self._settings = settings
-        self._github = github.Github(self._settings.GITHUB_USER, self._settings.GITHUB_TOKEN)
 
-    def _platform_from_link(self, link):
-        for extension, title in self._settings.EXTENSION_TO_PLATFORM_TITLE.items():
-            if link.endswith(extension):
-                return title
+    def _update_links_comment(self, github_pr: PullRequest, github_comment, build_result: CiBuildResult):
+        bot_comment = BotComment.from_text(github_comment.body, self._settings.comment)
 
-        return None
+        if bot_comment is not None and str(bot_comment.commit_sha) == github_pr.head.sha:
+            bot_comment.add_build_result(build_result)
+        else:
+            bot_comment = self._generate_comment(github_pr, build_result)
 
-    def _generate_sha_line(self, sha):
-        return "{sha_prefix}{sha}".format(sha=sha, sha_prefix=self.SHA_PREFIX)
+        github_comment.edit(bot_comment.to_text(self._settings.comment))
 
-    def _parse_sha_line(self, comment_body: str):
-        return comment_body.splitlines()[-1][len(self.SHA_PREFIX):]
+    def update_or_create_links_comment(self, github_pr: PullRequest,
+                                       build_result: CiBuildResult):
+        github_comment = self._find_bot_pr_comment(github_pr)
 
-    def _generate_comment_from_platforms_and_links(self, links_and_platforms):
-        comment = self._settings.BOT_COMMENT_BODY_TEMPLATE
+        if github_comment:
+            self._update_links_comment(github_pr, github_comment, build_result)
+        else:
+            new_bot_comment = self._generate_comment(github_pr, build_result)
+            github_pr.create_issue_comment(new_bot_comment.to_text(self._settings.comment))
 
-        comment += ''.join(self._generate_comment_download_lines(links_and_platforms))
-
-        comment += self._settings.BOT_COMMENT_FOOTER
-
+    @staticmethod
+    def _generate_comment(github_pr: PullRequest, build_result: CiBuildResult):
+        comment = BotComment(commit_sha=github_pr.head.sha)
+        comment.add_build_result(build_result)
         return comment
 
-    def _generate_comment_download_lines(self, links_and_platforms):
-        for link, platform in links_and_platforms:
-            yield self._settings.BOT_COMMENT_DOWNLOAD_LINE_TEMPLATE.format(platform=platform, link=link)
-
-    def _update_links_comment(self, github_pr: PullRequest, bot_comment, links_and_platform_names):
-        # Check the sha line, if it is not up to date to pr.head.sha, regenerate the whole comment.
-        sha = self._parse_sha_line(bot_comment.body)
-
-        if sha == github_pr.head.sha:
-            # Skip sha line.
-            new_body = bot_comment.body[:bot_comment.body.rfind('\n')]
-
-            new_body = new_body[:-len(self._settings.BOT_COMMENT_FOOTER)]
-            new_body += ''.join(self._generate_comment_download_lines(links_and_platform_names)) + \
-                        self._settings.BOT_COMMENT_FOOTER + '\n' + self._generate_sha_line(sha)
-        else:
-            new_body = self._generate_comment(github_pr, links_and_platform_names)
-
-        bot_comment.edit(new_body)
-
-    def update_or_create_links_comment(self, github_pr: PullRequest, artifact_links: Tuple[str]):
-        links_and_platform_names = tuple(self._resolve_artifact_links_titles(artifact_links))
-        if not links_and_platform_names:
-            return
-
-        bot_comment = self._find_bot_pr_comment(github_pr)
-
-        if bot_comment is not None:
-            self._update_links_comment(github_pr, bot_comment, links_and_platform_names)
-        else:
-            new_body = self._generate_comment(github_pr, links_and_platform_names)
-            github_pr.create_issue_comment(new_body)
-
-    def _generate_comment(self, github_pr, links_and_platform_names):
-        new_body = self._generate_comment_from_platforms_and_links(
-            links_and_platform_names) + "\n" + self._generate_sha_line(github_pr.head.sha)
-        return new_body
-
-    def _resolve_artifact_links_titles(self, artifact_links):
-        for link in artifact_links:
-            link_title = self._platform_from_link(link)
-
-            if link_title is not None:
-                yield link, link_title
-
-    def _find_bot_pr_comment(self, github_pr):
+    def _find_bot_pr_comment(self, github_pr: PullRequest) -> Optional[IssueComment]:
         for comment in github_pr.get_issue_comments():
-            if comment.user.login == self._settings.GITHUB_USER:
+            if comment.user.login == self._settings.github.username:
                 return comment
 
         return None

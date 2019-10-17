@@ -1,21 +1,28 @@
-import requests
 import logging
 
+import requests
 
+from common.types import ArtifactLink, CiTitle
 from resolvers.ArtifactResolver import ArtifactResolver
 
 
 class Appveyor(ArtifactResolver):
+    @property
+    def ci_title(self) -> CiTitle:
+        return CiTitle("Appveyor")
+
     @staticmethod
     def _get_link_regex():
-        return r'http[s]?://ci.appveyor.com/project/{repo}/builds/(?P<id>[0-9]+)'.format(repo=ArtifactResolver.CAPTURING_REPO_REGEX)
+        return r'http[s]?://ci.appveyor.com/project/{repo}/builds/(?P<id>[0-9]+)' \
+            .format(repo=ArtifactResolver.CAPTURING_REPO_REGEX)
 
     def artifacts_urls(self):
         artifact_link = 'https://ci.appveyor.com/api/buildjobs/{job_id}/artifacts/{artifact_file_name}'
 
         for job in self._resolve_jobs():
             for artifact in self._resolve_job_artifacts(job):
-                yield artifact_link.format(job_id=job['jobId'], artifact_file_name=artifact['fileName'])
+                yield ArtifactLink(artifact_link.format(job_id=job['jobId'],
+                                                        artifact_file_name=artifact['fileName']))
 
     def _resolve_jobs(self):
         build_api = 'https://ci.appveyor.com/api/projects/{repo}/builds/{build_id}'.format(build_id=self.build_id(),

@@ -4,8 +4,8 @@ handlers:
   # This handler routes all requests not caught above to your main app. It is
   # required when static routes are defined, but can be omitted (along with
   # the entire handlers section) when there are no static files defined.
-- url: /.*
-  script: auto
+  - url: /.*
+    script: auto
 
 automatic_scaling:
   max_instances: 1

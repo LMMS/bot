@@ -18,8 +18,8 @@ comment_settings = Settings.Comment(
 )
 
 github_settings = Settings.Github(
-    username="<username>",
-    token='<token>',
+    username="LmmsBot",
+    token='',
 )
 
 linux = Settings.Platform(
@@ -32,10 +32,8 @@ linux = Settings.Platform(
 windows = Settings.Platform(
     name="Windows",
     extension_to_title={
-        'mingw.win32.exe': "32-bit (mingw)",
-        'mingw.win64.exe': "64-bit (mingw)",
-        'msvc17.win32.exe': "32-bit (MSVC 2017)",
-        'msvc17.win64.exe': "64-bit (MSVC 2017)",
+        'win32.exe': "32-bit",
+        'win64.exe': "64-bit",
     }
 )
 
