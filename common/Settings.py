@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, List
 
 from pydantic import BaseModel, SecretStr
 
@@ -22,4 +22,5 @@ class Settings(BaseModel):
 
     comment: Comment
     github: Github
-    platforms: Sequence[Platform]
+    platforms: List[Platform]
+    pull_request: PullRequest
