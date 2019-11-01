@@ -20,6 +20,10 @@ class Settings(BaseModel):
         username: str
         token: SecretStr
 
+    class PullRequest(BaseModel):
+        Label = str
+        ignored_labels: Sequence[Label]
+
     comment: Comment
     github: Github
     platforms: List[Platform]

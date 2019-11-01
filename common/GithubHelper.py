@@ -13,6 +13,13 @@ class GithubHelper:
         self._settings = settings
         self._github = github.Github(self._settings.username, self._settings.token.get_secret_value())
 
+    @staticmethod
+    def has_ignored_labels(settings: Settings.PullRequest, pull_request: PullRequest):
+        for ignored_label in settings.ignored_labels:
+            if ignored_label in (label.name for label in pull_request.labels):
+                return True
+        return False
+
     def find_pr_from_commit(self, repo: str, commit_sha: str) -> Optional[PullRequest]:
         repo = self._github.get_repo(repo)
 

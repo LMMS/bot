@@ -51,8 +51,15 @@ macOS = Settings.Platform(
     }
 )
 
+pull_request = Settings.PullRequest(
+    ignored_labels=(
+        "bot-skip",
+    )
+)
+
 settings = Settings(
     comment=comment_settings,
     github=github_settings,
     platforms=[linux, windows, macOS],
+    pull_request=pull_request,
 )

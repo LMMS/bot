@@ -30,6 +30,9 @@ def main():
     if pull_request is None:
         return "Could not find a pull request for this sha"
 
+    if GithubHelper.has_ignored_labels(settings.pull_request, pull_request):
+        return "Pull Request ignored (has a ignore label)"
+
     resolver = None
     url = json_data['target_url']
     for resolver_cls in resolvers:
